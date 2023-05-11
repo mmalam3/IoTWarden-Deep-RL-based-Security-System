@@ -9,7 +9,8 @@ import numpy as np
 import gym
 import tensorflow as tf
 
-from IoTEnvironment import create_environment
+# from IoTEnvironment import create_environment
+from IoTEnvironmentv0 import create_environment
 from agent import Agent
 
 if __name__ == '__main__':
@@ -17,7 +18,7 @@ if __name__ == '__main__':
     env = create_environment()
 
     # create the agent
-    agent = Agent("Agent")
+    agent = Agent('agent-defender')
 
     # train the agent
     agent.train_agent(env)

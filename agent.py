@@ -28,11 +28,11 @@ class Agent(object):
         self.tau = 0.05
         self.lr = 1e-5
         self.n_actions = 4
-        self.n_observations = 12
+        self.n_observations = 20
         # self.writer = tf.summary.create_file_writer('logs/')
         self.episodic_loss = 0
 
-        self.episode_durations = []
+        self.episode_returns = []
 
         # create network
         self.policy_net = DQN(self.n_observations, self.n_actions)
@@ -126,28 +126,28 @@ class Agent(object):
             new_weights.append(new_w)
         self.target_net.set_weights(new_weights)
 
-    def plot_durations(self, show_result=False):
+    def plot_rewards(self, show_result=False):
         plt.figure(1)
-        durations_t = np.array(self.episode_durations, dtype=np.float32)
+        rewards = np.array(self.episode_returns, dtype=np.float32)
         if show_result:
             plt.title('Result')
         else:
             # plt.clf()
             plt.title('Training...')
-        plt.xlabel('Episode')
-        plt.ylabel('Duration')
-        plt.plot(durations_t)
+        plt.xlabel('Epochs')
+        plt.ylabel('Returns')
+        plt.plot(rewards, 'red')
         plt.savefig("training_reward_test.png")
 
     # method to train the agent
     def train_agent(self, env):
-        for e in range(100):
+        for e in range(1000):
             state, info = env.reset()
             current_return = 0
 
-            state = tf.convert_to_tensor(np.array(state).reshape(1, 12), dtype=tf.float32)
+            state = tf.convert_to_tensor(np.array(state).reshape(1, 20), dtype=tf.float32)
 
-            for t in count():
+            for t in range(200):
                 # select an action for the current state
                 action = self.select_action(state)
                 action = tf.cast(action, tf.int32).numpy()[0]
@@ -155,7 +155,7 @@ class Agent(object):
                 # make a transition by calling the step() of env
                 # output of step() -> (obs, reward, status, info)
                 observation, reward, terminated, _ = env.step(action)
-                observation = np.array(observation).reshape(1, 12)
+                observation = np.array(observation).reshape(1, 20)
 
                 current_return += reward
 
@@ -189,13 +189,13 @@ class Agent(object):
                 # if (e + 1) % 2 == 0:
                 #     tf.saved_model.save(self.policy_net.state_dict(), "models/model_test.pth")
 
-                if done:
-                    self.episode_durations.append(current_return)
+                if done or t == 199:
+                    self.episode_returns.append(current_return)
                     # print(f'Current return: {current_return}')
-                    self.plot_durations()
+                    self.plot_rewards()
                     # env.closeEnvConnection()
                     env.reset()
-                    print(f'Episodes:{e + 1}, Reward: {current_return}')
+                    print(f'Episodes:{e + 1}, Timestep: {t}, Reward: {current_return}')
                     break
 
             # self.writer.add_scalar("Loss/train", self.episodic_loss, (e + 1))
@@ -203,5 +203,5 @@ class Agent(object):
             # self.writer.flush()
             self.episodic_loss = 0.0
 
-        self.plot_durations(show_result=True)
+        self.plot_rewards(show_result=True)
         plt.show()
