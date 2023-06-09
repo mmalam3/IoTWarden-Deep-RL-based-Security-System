@@ -12,7 +12,6 @@ Note: We are implementing it from the defense perspective
 
 import gym
 from gym import spaces
-import random
 
 
 class IoTEnv(gym.Env):
@@ -22,99 +21,84 @@ class IoTEnv(gym.Env):
         self.observation_space = spaces.Discrete(12)
 
         self.state = [0] * 12
+        self.state_space_size = len(self.state)
         self._latest_state = 0
-        self._latest_state_pool = 0
-        self._goal_state = 5 # Goal state: window
+
+        self._goal_state = 10 # Goal state: window
         self.done = False
 
-        self.num_injection = 0 # action: 0
-        self.individual_injection_reward = 5
-        # self.silent_period = 0
-        # self.silent_threshold = 3 # continuous silent period
-        self.state_space_size = len(self.state)
+        self.num_injection_action = 0 # action: 3
+        self.num_monitor_defense_action = 0 # action: 1
+        self.num_defense_actions = 0 # action: 3
+        self.num_monitor_attack_action = 0 # action: 2
 
-        self.num_defense_actions = 0
-        self.individual_defense_reward = 10
-
-        # self.discount_factor = 0.95
-        self.state_pools = [[0],
-                            [1, 2, 3, 4],
-                            [5, 6],
-                            [7, 8],
-                            [9, 10, 11]]
-
-    def check_goal_status(self):
-        if self.state[self._goal_state] == 1: return True
-        else: return False
+        self.attack_proximity_factor = 0
+        self.proximity_threshold = 0.7
 
     def reset(self):
         # Reset the environment to its initial state and
         # return the initial observation state at the start of the game
         self.state = [0] * 12
         self._latest_state = 0
-        self._latest_state_pool = 0
         self.done = False
-        self.num_injection = 0  # action: 0
-        # self.silent_period = 0
-        self.num_defense_actions = 0
+        self.num_injection_action = 0  # action: 3
+        self.num_monitor_defense_action = 0  # action: 1
+        self.num_defense_actions = 0  # action: 3
+        self.num_monitor_attack_action = 0  # action: 2
+        self.attack_proximity_factor = 0
 
         return self.state, {}
 
     def step(self, action):
-        curr_states = self.state_pools[self._latest_state_pool]
         injection_threshold = 0.3
-        attack_gain = 0
-        defense_gain = 0
 
-        # attacker's action: 'inject_fake_events'
-        if action == 0:
-            self.num_injection += 1
-            if (self.num_injection / self.state_space_size) >= injection_threshold:
-                # attacker aggression in dangerous mode
-                attack_gain -= int(injection_threshold * self.num_injection) # defender's POV
-                # attack_gain += int(injection_threshold * self.num_injection) # attacker's POV
+        goal_node_reward = 0
+        reward_for_current_action = 0
 
-            if self._latest_state_pool == len(self.state_pools) - 2:  # 2nd last pool
-                if self.state[self._goal_state] == 1:
-                    attack_gain += 100
-                    self.done = True
-                    self.reset()
+        if action == 0: # attacker's action: 'inject_fake_events'
+            reward_for_current_action -= 5
 
-            elif curr_states[-1] == self._latest_state:  # last state of the current pool
-                self._latest_state_pool += 1
-                curr_states = self.state_pools[self._latest_state_pool]  # update curr_states
-                attack_gain += self.individual_injection_reward + (self._latest_state_pool * self.num_injection)
+            self.num_injection_action += 1
+            self._latest_state += 1
+            self.state[self._latest_state] = 1
+            self.attack_proximity_factor = self._latest_state / self.state_space_size
 
-        # attacker's action: 'monitor_defense_actions'
-        elif action == 1:
-            # demotivate attacker to monitor defense actions
-            attack_gain += self.num_defense_actions
+            # check whether goal node is compromised
+            if self.state[self._goal_state] == 1:
+                goal_node_reward += 50
+                self.done = True
+                self.reset()
 
-        # defender's action: 'monitor_attack_actions'
-        elif action == 2:
-            defense_gain += self.num_injection # defender's POV
-            # defense_gain -= self.num_injection # attacker's POV
+        elif action == 1: # attacker's action: 'monitor_defense_actions'
+            reward_for_current_action += 0.5
+            self.num_monitor_defense_action += 1
 
-        # defender's action: blocking trigger actions
-        elif action == 3:
+        elif action == 2: # defender's action: 'monitor_attack_actions'
+            reward_for_current_action += 1
+            self.num_monitor_attack_action += 1
+
+        elif action == 3: # defender's action: blocking trigger actions
+            reward_for_current_action += 10
+
             self.num_defense_actions += 1
-            defense_gain += self.individual_defense_reward
-            defense_gain += (self._latest_state_pool * self.num_defense_actions)
+            self.state[self._latest_state] = 0
 
-            if self._latest_state_pool >= 1:
-                self._latest_state_pool -= 1
+            # only push the attack backward if the current node is not the very first node
+            if self._latest_state > 0:
+                self._latest_state -= 1
 
-        # choose the index of first zero element
-        for _state in curr_states:
-            if self.state[_state] == 0:
-                self._latest_state = _state
-                break
+            self.attack_proximity_factor = self._latest_state / self.state_space_size
 
-        self.state[self._latest_state] = 1
+        # calculate reward based on the reward function
+        x = reward_for_current_action # x = r_d + r_ma + r_md - r_i
 
-        # calculate reward
-        reward = defense_gain - attack_gain # defender POV
-        # reward = attack_gain - defense_gain # attacker's POV
+        y_1 = (self.num_injection_action + self.num_monitor_defense_action) - (self.num_defense_actions + self.num_monitor_attack_action)
+        y_2 = (self.attack_proximity_factor - 1)
+        y= y_1 * y_2
+
+        z = self.num_injection_action * injection_threshold
+
+        reward = x + y - z - goal_node_reward
 
         # specify returning values
         obs = self.state
