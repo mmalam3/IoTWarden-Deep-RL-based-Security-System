@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from time import perf_counter
 
 import tensorflow as tf
-tf.random.set_seed(40)
+tf.random.set_seed(50)
 
 # import DQN and ReplayMemory classes
 from dqn import DQN
@@ -33,16 +33,20 @@ class Agent(object):
         self.lr = 1e-3
         self.n_actions = 4
         self.n_observations = 12
-        self.n_episodes = [215]
+        self.n_episodes = [1000]
         self.n_epochs = 1
         self.timesteps = 100
         self.episodic_loss = 0
         self.episode_returns = []
 
-        self.writer = tf.summary.create_file_writer('logs')
+        # create writers to draw plots in tensorboard
+        self.writer_reward = tf.summary.create_file_writer('logs/reward')
+        self.writer_time_overhead = tf.summary.create_file_writer('logs/time_overhead')
+        # self.writer_time_to_compromise = tf.summary.create_file_writer('logs/time_to_compromise')
         # self.writer_action_ratio = tf.summary.create_file_writer('logs/action_ratio')
-        # self.writer_injections = tf.summary.create_file_writer('logs/injections')
-        # self.writer_block_ops = tf.summary.create_file_writer('logs/block_ops')
+        self.writer_injections = tf.summary.create_file_writer('logs/injections')
+        self.writer_block_ops = tf.summary.create_file_writer('logs/block_ops')
+        # self.writer_block_inject_ratio = tf.summary.create_file_writer('logs/writer_block_inject_ratio')
 
         # create network
         self.policy_net = DQN(self.n_observations, self.n_actions)
@@ -50,7 +54,7 @@ class Agent(object):
         self.target_net.set_weights(self.policy_net.get_weights())
 
         self.optimizer = tf.keras.optimizers.legacy.Adam(learning_rate=self.lr, amsgrad=True)
-        self.memory = ReplayMemory(40000)
+        self.memory = ReplayMemory(60000)
 
     # method to select action using policy_net (DQN)
     def select_action(self,state):
@@ -207,50 +211,43 @@ class Agent(object):
                             if done:
                                 print('\nGoal node compromised')
                                 total_curr_attack += 1
+                                # time_to_compromise = perf_counter() - t1_start
+                                # with self.writer_time_to_compromise.as_default():
+                                #     # time over head vs episodes
+                                #     tf.summary.scalar(name='time-to-compromise-goal-node',
+                                #                       data=time_to_compromise,
+                                #                       step=(episode + 1))
+                                #     self.writer_time_to_compromise.flush()
+                                # break
 
                             # self.episode_returns.append(current_return)
                             episode_return_total += current_return # accumulate episode return for current epoch
 
                             # self.plot_rewards()
                             env.reset()
-                            # print(f'Episode:{episode+1}, Epoch: {epoch+1}, Timestep: {t}, Reward: {current_return}')
 
-                            # Stop the stopwatch / counter and calculate time overhead
+                            # show 'num_block_trigger_action' and 'num_event_injections' in same fig
+                            # same scalar name, but different writers
+                            with self.writer_block_ops.as_default():
+                                tf.summary.scalar(name='injection_block_ops_vs_episode',
+                                                  data=num_block_trigger_action,
+                                                  step=(episode + 1))
+                                self.writer_block_ops.flush()
+
+                            with self.writer_injections.as_default():
+                                tf.summary.scalar(name='injection_block_ops_vs_episode',
+                                                  data=num_event_injections,
+                                                  step=(episode + 1))
+                                self.writer_injections.flush()
+
                             time_overhead = perf_counter() - t1_start
 
-                            # # flush event_injections and block_ops count in separate logs
-                            # # using different writers, but same name
-
-                            time_to_compromise = perf_counter() - t1_start
-
-                            with self.writer.as_default():
+                            with self.writer_time_overhead.as_default():
                                 # time over head vs episodes
-                                tf.summary.scalar(name='time-to-compromise-goal-node', data=time_to_compromise, step=(episode + 1))
-                                self.writer.flush()
-
-                            # with self.writer_injections.as_default():
-                            #     # time over head vs episodes
-                            #     tf.summary.scalar(name='injection_block_ops_vs_episode', data=num_event_injections, step=(episode + 1))
-                            #     self.writer_injections.flush()
-                            #
-                            # with self.writer_block_ops.as_default():
-                            #     tf.summary.scalar(name='injection_block_ops_vs_episode', data=num_block_trigger_action, step=(episode + 1))
-                            #     self.writer_block_ops.flush()
-
-                            # with self.writer_action_ratio.as_default():
-                            #     tf.summary.scalar(name='blocking_injection_action_ratio',
-                            #                       data=(num_block_trigger_action / num_event_injections),
-                            #                       step=(episode + 1))
-                            #
-                            #     tf.summary.scalar(name='injection_total_actions_ratio',
-                            #                       data=(num_event_injections / total_actions),
-                            #                       step=(episode + 1))
-                            #
-                            #     tf.summary.scalar(name='injection_total_actions_ratio',
-                            #                       data=(num_event_injections / total_actions),
-                            #                       step=(episode + 1))
-                            #
-                            #     self.writer_action_ratio.flush()
+                                tf.summary.scalar(name='time_overhead',
+                                                  data=time_overhead,
+                                                  step=(episode + 1))
+                                self.writer_time_overhead.flush()
 
                             break
 
@@ -263,7 +260,7 @@ class Agent(object):
                 print(f'Episode:{episode+1}, Avg_reward: {avg_episode_return}')
 
                 # flush returns for each episode in Tensorboard
-                # with self.writer.as_default():
-                #     tf.summary.scalar(name='reward', data=avg_episode_return, step=(episode+1))
-                #     self.writer.flush()
+                with self.writer_reward.as_default():
+                    tf.summary.scalar(name='reward', data=avg_episode_return, step=(episode+1))
+                    self.writer_reward.flush()
 
