@@ -34,6 +34,9 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 
 # Reference
 [1] Mnih, Volodymyr & Kavukcuoglu, Koray & Silver, David & Graves, Alex & Antonoglou, Ioannis & Wierstra, Daan & Riedmiller, Martin. (2013). Playing Atari with Deep Reinforcement Learning. 
+
 [2] Birnbach, S., & Eberz, S. (2019). Peeves: Physical Event Verification in Smart Homes. University of Oxford.
-[3] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural Comput., vol. 9, no. 8, p. 1735–1780, nov 1997. [Online]. Available: https://doi.org/10.1162/neco.1997.9.8.1735
-[4] R. Bellman, “A markovian decision process,” Indiana Univ. Math. J., vol. 6, pp. 679–684, 1957
+
+[3] S. Hochreiter and J. Schmidhuber, “Long short-term memory,” Neural Comput., vol. 9, no. 8, p. 1735–1780, nov 1997. [Online]. Available: https://doi.org/10.1162/neco.1997.9.8.1735.
+
+[4] R. Bellman, “A markovian decision process,” Indiana Univ. Math. J., vol. 6, pp. 679–684, 1957.
