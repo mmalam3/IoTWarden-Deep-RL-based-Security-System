@@ -26,7 +26,7 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 
 # Ouput
 1) Output for optimal event sequences extraction:
-![](/Evaluation/accuracy_plot.pdf)
+![](Evaluation/accuracy_plot.pdf)
 
 2) 
 
