@@ -28,7 +28,7 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 1) **Security agent's reward**: Since the goal of an MDP is always maximizing total reward achievable over a limited number of epochs in a single game iteration, IoTWarden always tries to choose a defense policy that lets the security agent achieves maximized security rewards, similar to the shown in the following figure:
 ![Defense agent's reward over 250 epochs](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/reward_vs_episodes.png)
 
-2) Performance evaluation of the LSTM-based RNN:
+2) **Performance evaluation of the LSTM-based RNN**: The following figures shows the training and validation accuracy and loss of the LSTM-based RNN used to extract the temporal dependencies of the dataset events and generate optimal sequences of events for the attacker. 
 ![Training and validation accuracy of the LSTM-based RNN](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/accuracy_plot.png)
 ![Training and validation loss of the LSTM-based RNN](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/loss_plot.png) 
 
