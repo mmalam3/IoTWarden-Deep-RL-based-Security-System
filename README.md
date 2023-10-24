@@ -22,7 +22,13 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 # Usage
 1. Install the following dependencies: `TensorFlow`, `OpenAI Gym`, `Python`, `NumPy`, `pandas`, and `Matplotlib`.
 2. Simply execute the `main.py` script to run IoTWarden.
-3. To extract optimal event sequences for the attacker, execute the notebook named `sequence_modeling_LSTM.ipynb`. 
+3. To extract optimal event sequences for the attacker, execute the notebook named `sequence_modeling_LSTM.ipynb`.
+
+# Ouput
+1) Output for optimal event sequences extraction:
+![](/Evaluation/accuracy_plot.pdf)
+
+2) 
 
 # Reference
 [1] Mnih, Volodymyr & Kavukcuoglu, Koray & Silver, David & Graves, Alex & Antonoglou, Ioannis & Wierstra, Daan & Riedmiller, Martin. (2013). Playing Atari with Deep Reinforcement Learning. 
