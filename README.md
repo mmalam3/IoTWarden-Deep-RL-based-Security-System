@@ -26,7 +26,7 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 
 # Ouput
 1) Output for optimal event sequences extraction:
-![Training and validation accuracy of the LSTM-based RNN](Evaluation/accuracy_plot.pdf)
+![Training and validation accuracy of the LSTM-based RNN]([Evaluation/accuracy_plot.pdf](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/accuracy_plot.pdf))
 
 2) 
 
