@@ -32,6 +32,9 @@ Besides, IoTWarden also discovers temporal patterns of different IoT events reco
 ![Training and validation accuracy of the LSTM-based RNN](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/accuracy_plot.png)
 ![Training and validation loss of the LSTM-based RNN](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/main/Evaluation/loss_plot.png) 
 
+# Published Research Paper
+**Pre-print:** [IoTWarden_Alam_2024.pdf](https://github.com/mmalam3/DQN-TensorFlow-Gym/blob/7fddff858006664f841438be3908deb93bcad6ed/IoTWarden_Alam_2024.pdf)
+
 # Reference
 [1] Mnih, Volodymyr & Kavukcuoglu, Koray & Silver, David & Graves, Alex & Antonoglou, Ioannis & Wierstra, Daan & Riedmiller, Martin. (2013). Playing Atari with Deep Reinforcement Learning. 
 
